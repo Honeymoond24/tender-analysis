@@ -1,2 +1,4 @@
 .idea
 files
+.env
+docker/volumes

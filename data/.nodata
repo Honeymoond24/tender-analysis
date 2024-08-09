@@ -1,0 +1,96 @@
+// application/repository.go
+
+package application
+
+type UserRepository interface {
+    GetUserByID(id int) (*User, error)
+    CreateUser(user *User) error
+    // Define other methods as needed
+}
+
+type User struct {
+    ID   int
+    Name string
+    // Other fields
+}
+
+====================================================================================================
+// infrastructure/mysql_user_repository.go
+
+package infrastructure
+
+import (
+    "database/sql"
+    "your_project/application"
+)
+
+type MySQLUserRepository struct {
+    DB *sql.DB
+}
+
+func (r *MySQLUserRepository) GetUserByID(id int) (*application.User, error) {
+    // Implementation for fetching a user by ID from MySQL
+    var user application.User
+    err := r.DB.QueryRow("SELECT id, name FROM users WHERE id = ?", id).Scan(&user.ID, &user.Name)
+    if err != nil {
+        return nil, err
+    }
+    return &user, nil
+}
+
+func (r *MySQLUserRepository) CreateUser(user *application.User) error {
+    // Implementation for creating a new user in MySQL
+    _, err := r.DB.Exec("INSERT INTO users (id, name) VALUES (?, ?)", user.ID, user.Name)
+    return err
+}
+
+// Implement other methods as needed
+====================================================================================================
+// main.go or a service file
+
+package main
+
+import (
+    "database/sql"
+    "your_project/application"
+    "your_project/infrastructure"
+    _ "github.com/go-sql-driver/mysql"
+)
+
+func main() {
+    // Set up the database connection
+    db, err := sql.Open("mysql", "user:password@/dbname")
+    if err != nil {
+        panic(err)
+    }
+
+    // Create the repository instance
+    userRepository := &infrastructure.MySQLUserRepository{DB: db}
+
+    // Use the repository
+    userService := application.UserService{Repo: userRepository}
+
+    // Example usage
+    user, err := userService.GetUserByID(1)
+    if err != nil {
+        panic(err)
+    }
+    // Do something with the user
+    fmt.Println(user)
+}
+
+// application/user_service.go
+
+package application
+
+type UserService struct {
+    Repo UserRepository
+}
+
+func (s *UserService) GetUserByID(id int) (*User, error) {
+    return s.Repo.GetUserByID(id)
+}
+
+func (s *UserService) CreateUser(user *User) error {
+    return s.Repo.CreateUser(user)
+}

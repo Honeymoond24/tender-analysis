@@ -3,8 +3,18 @@ package main
 import (
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation"
 	"go.uber.org/fx"
+	"go.uber.org/fx/fxevent"
+	"go.uber.org/zap"
 	"net/http"
 )
+
+func AsRoute(f any) any {
+	return fx.Annotate(
+		f,
+		fx.As(new(presentation.Route)),
+		fx.ResultTags(`group:"routes"`),
+	)
+}
 
 func main() {
 	//err := godotenv.Load()
@@ -18,7 +28,22 @@ func main() {
 	//}
 
 	fx.New(
-		fx.Provide(presentation.NewHTTPServer),
-		fx.Invoke(func(*http.Server) {}),
+		fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
+			return &fxevent.ZapLogger{Logger: log}
+		}),
+		fx.Provide(
+			presentation.NewHTTPServer, // http server
+			fx.Annotate(
+				presentation.NewServeMux,
+				fx.ParamTags(`group:"routes"`),
+			), // http serve mux with routes
+			AsRoute(presentation.NewRootHandler),
+			AsRoute(presentation.NewStatisticsHandler),
+			presentation.SetupServerHandler,
+			zap.NewProduction, // logger
+		),
+		fx.Invoke(
+			func(*http.Server) {},
+		),
 	).Run()
 }

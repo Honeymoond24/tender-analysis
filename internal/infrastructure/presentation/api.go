@@ -2,39 +2,37 @@ package presentation
 
 import (
 	"context"
-	"fmt"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation/middleware"
 	"go.uber.org/fx"
-	"log"
+	"go.uber.org/zap"
 	"net"
 	"net/http"
 	"time"
 )
 
-func setupHandler(apiPrefix string) http.Handler {
-	apiRouter := setupRoutes()
+func SetupServerHandler(apiRouter *http.ServeMux) http.Handler {
+	apiPrefix := "/api/v1/"
+	//apiRouter := NewServeMux()
 
 	rootMuxRouter := http.NewServeMux()
 
 	apiPrefixSliced := apiPrefix[:len([]rune(apiPrefix))-1] // remove the last slash: '/api/v1/' to '/api/v1'
 	rootMuxRouter.Handle(apiPrefix, http.StripPrefix(apiPrefixSliced, apiRouter))
-
 	handler := middleware.Logging(rootMuxRouter)
 	return handler
 }
 
-func NewHTTPServer(lc fx.Lifecycle) *http.Server {
+func NewHTTPServer(lc fx.Lifecycle, mux *http.ServeMux, log *zap.Logger) *http.Server {
 	port := "8000"
-	apiPrefix := "/api/v1/"
-	log.Println("Starting server on port", port)
+	log.Info("Starting server on port", zap.String("port", port))
+
 	srv := &http.Server{
 		Addr:           ":" + port,
-		Handler:        setupHandler(apiPrefix),
+		Handler:        mux,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	//log.Fatal(s.ListenAndServe())
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
@@ -42,14 +40,13 @@ func NewHTTPServer(lc fx.Lifecycle) *http.Server {
 			if err != nil {
 				return err
 			}
-			fmt.Println("Starting HTTP server at", srv.Addr)
-			go srv.Serve(ln)
-			//go func() {
-			//	err := srv.Serve(ln)
-			//	if err != nil {
-			//		log.Println(err)
-			//	}
-			//}()
+			log.Info("Starting HTTP server at", zap.String("addr", srv.Addr))
+			go func() {
+				err := srv.Serve(ln)
+				if err != nil {
+					log.Info("NewHTTPServer error", zap.Error(err))
+				}
+			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {

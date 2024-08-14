@@ -2,6 +2,7 @@ package presentation
 
 import (
 	"context"
+	"git.b4i.kz/b4ikz/tenderok-analytics/cmd/app/config"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation/middleware"
 	"go.uber.org/fx"
 	"go.uber.org/zap"
@@ -22,12 +23,11 @@ func SetupServerHandler(apiRouter *http.ServeMux) http.Handler {
 	return handler
 }
 
-func NewHTTPServer(lc fx.Lifecycle, mux *http.ServeMux, log *zap.Logger) *http.Server {
-	port := "8000"
-	log.Info("Starting server on port", zap.String("port", port))
+func NewHTTPServer(lc fx.Lifecycle, mux *http.ServeMux, log *zap.Logger, port config.HTTPServerPort) *http.Server {
+	log.Info("Starting server on port", zap.String("port", string(port)))
 
 	srv := &http.Server{
-		Addr:           ":" + port,
+		Addr:           string(":" + port),
 		Handler:        mux,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,

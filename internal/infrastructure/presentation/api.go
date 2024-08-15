@@ -40,11 +40,11 @@ func NewHTTPServer(lc fx.Lifecycle, mux *http.ServeMux, log *zap.Logger, port co
 			if err != nil {
 				return err
 			}
-			log.Info("Starting HTTP server at", zap.String("addr", srv.Addr))
+			log.Info("Starting HTTP server at", "addr", srv.Addr)
 			go func() {
 				err := srv.Serve(ln)
 				if err != nil {
-					log.Info("NewHTTPServer error", zap.Error(err))
+					log.Info("NewHTTPServer error", err)
 				}
 			}()
 			return nil

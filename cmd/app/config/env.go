@@ -1,14 +1,14 @@
 package config
 
 import (
+	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
 	"github.com/joho/godotenv"
-	"go.uber.org/zap"
 	"os"
 )
 
 type HTTPServerPort string
 
-func GetHTTPServerPort(log *zap.Logger) HTTPServerPort {
+func GetHTTPServerPort(log application.Logger) HTTPServerPort {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -18,7 +18,7 @@ func GetHTTPServerPort(log *zap.Logger) HTTPServerPort {
 
 type DatabaseDSN string
 
-func GetDatabaseDSN(log *zap.Logger) DatabaseDSN {
+func GetDatabaseDSN(log application.Logger) DatabaseDSN {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")

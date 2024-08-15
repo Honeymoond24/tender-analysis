@@ -11,12 +11,12 @@ import (
 // r.PathValue("id")
 
 type StatisticsHandler struct {
-	log        *zap.Logger
+	log        application.Logger
 	repository application.StatisticsRepository
 }
 
-func NewStatisticsHandler(log *zap.Logger, repository *application.StatisticsRepository) *StatisticsHandler {
-	return &StatisticsHandler{log: log, repository: *repository}
+func NewStatisticsHandler(log application.Logger, repository application.StatisticsRepository) *StatisticsHandler {
+	return &StatisticsHandler{log: log, repository: repository}
 }
 func (h *StatisticsHandler) Pattern() string {
 	return "/statistics"
@@ -32,10 +32,10 @@ func (h *StatisticsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 type PersonalStatisticsHandler struct {
-	log *zap.Logger
+	log application.Logger
 }
 
-func NewPersonalStatisticsHandler(log *zap.Logger) *PersonalStatisticsHandler {
+func NewPersonalStatisticsHandler(log application.Logger) *PersonalStatisticsHandler {
 	return &PersonalStatisticsHandler{log: log}
 }
 func (h *PersonalStatisticsHandler) Pattern() string {

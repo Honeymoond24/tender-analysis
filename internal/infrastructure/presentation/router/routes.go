@@ -23,7 +23,7 @@ func (h *StatisticsHandler) Pattern() string {
 }
 
 func (h *StatisticsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	statistics := use_cases.GetGeneralStatistics(&h.repository)
+	statistics := use_cases.GetGeneralStatistics(h.repository)
 	_, err := fmt.Fprint(w, statistics)
 	if err != nil {
 		h.log.Error("Failed to write response", zap.Error(err))

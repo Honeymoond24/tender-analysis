@@ -32,6 +32,7 @@ func GetFxOptions() []fx.Option {
 			AsRoute(router.NewPersonalStatisticsHandler),                    // *PersonalStatisticsHandler
 			presentation.SetupServerHandler,                                 // http.Handler
 			logs.NewLogger,                                                  // *Logger
+			zap.NewProduction,                                               // *zap.Logger for fx
 			config.GetHTTPServerPort,                                        // HTTPServerPort
 			config.GetDatabaseDSN,                                           // DatabaseDSN
 			orm.Connection,                                                  // *gorm.DB

@@ -34,6 +34,8 @@ func GetFxOptions() []fx.Option {
 			presentation.SetupServerHandler,
 			zap.NewProduction, // logger
 			config.GetHTTPServerPort,
+			config.GetDatabaseDSN,                                           // DatabaseDSN
+			orm.Connection,                                                  // *gorm.DB
 		),
 		fx.Invoke(
 			func(*http.Server) {},

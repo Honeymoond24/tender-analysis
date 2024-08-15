@@ -1,20 +1,18 @@
 package orm
 
 import (
-	"fmt"
-	"github.com/glebarez/sqlite"
+	"git.b4i.kz/b4ikz/tenderok-analytics/cmd/app/config"
+	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
+	"go.uber.org/zap"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"path/filepath"
 )
 
-func Connection(dsn string) *gorm.DB {
-	//db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-	dsnWithFolder := filepath.Join("data", dsn)
-	fmt.Println("DSN:", dsnWithFolder)
-	db, err := gorm.Open(sqlite.Open(dsnWithFolder), &gorm.Config{})
-	//db, err := gorm.Open(sqlite.Open(dsn), &gorm.Config{})
+func Connection(dsn config.DatabaseDSN, log application.Logger) *gorm.DB {
+	db, err := gorm.Open(postgres.Open(string(dsn)), &gorm.Config{})
 	if err != nil {
 		panic(err)
 	}
+	log.Info("Connected to database", zap.String("DSN", string(dsn)))
 	return db
 }

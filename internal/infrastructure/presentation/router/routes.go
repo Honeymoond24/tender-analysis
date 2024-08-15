@@ -12,10 +12,10 @@ import (
 
 type StatisticsHandler struct {
 	log        *zap.Logger
-	repository application.GeneralStatistics
+	repository application.StatisticsRepository
 }
 
-func NewStatisticsHandler(log *zap.Logger, repository *application.GeneralStatistics) *StatisticsHandler {
+func NewStatisticsHandler(log *zap.Logger, repository *application.StatisticsRepository) *StatisticsHandler {
 	return &StatisticsHandler{log: log, repository: *repository}
 }
 func (h *StatisticsHandler) Pattern() string {

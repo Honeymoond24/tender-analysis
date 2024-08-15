@@ -16,7 +16,7 @@ type CompanyRepository interface {
 	GetOne(id int) (*domain.Company, error)
 }
 
-type GeneralStatistics interface {
+type StatisticsRepository interface {
 	ActiveTenders() int64
 	MostActiveCategoryByTenders() (string, int)
 	MostActiveCategoryByPriceSum() (string, float64)

@@ -1,9 +1,16 @@
 package orm
 
-import "gorm.io/gorm"
+import (
+	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
+	"gorm.io/gorm"
+)
 
 type StatisticsRepository struct {
 	DB *gorm.DB
+}
+
+func NewStatisticsRepository(db *gorm.DB) application.StatisticsRepository {
+	return &StatisticsRepository{DB: db}
 }
 
 func (s *StatisticsRepository) MostActiveCategoryByTenders() (string, int) {

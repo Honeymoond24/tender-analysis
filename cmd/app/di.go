@@ -2,6 +2,7 @@ package main
 
 import (
 	"git.b4i.kz/b4ikz/tenderok-analytics/cmd/app/config"
+	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/database/orm"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation/router"
 	"go.uber.org/fx"
@@ -36,6 +37,7 @@ func GetFxOptions() []fx.Option {
 			config.GetHTTPServerPort,
 			config.GetDatabaseDSN,                                           // DatabaseDSN
 			orm.Connection,                                                  // *gorm.DB
+			orm.NewStatisticsRepository,                                     // application.Statistics
 		),
 		fx.Invoke(
 			func(*http.Server) {},

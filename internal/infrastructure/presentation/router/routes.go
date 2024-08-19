@@ -1,6 +1,7 @@
 package router
 
 import (
+	"encoding/json"
 	"fmt"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application/use_cases"
@@ -23,7 +24,11 @@ func (h *StatisticsHandler) Pattern() string {
 
 func (h *StatisticsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	statistics := use_cases.GetGeneralStatistics(h.repository)
-	_, err := fmt.Fprint(w, statistics)
+
+	w.Header().Set("Content-Type", "application/json")
+	err := json.NewEncoder(w).Encode(statistics)
+
+	h.log.Info("Statistics request", r.RequestURI)
 	if err != nil {
 		h.log.Error("Failed to write response", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)

@@ -2,7 +2,7 @@ package main
 
 import (
 	"git.b4i.kz/b4ikz/tenderok-analytics/cmd/app/config"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/database/orm"
+	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/database/adapter"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/logs"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation/router"
@@ -35,8 +35,8 @@ func GetFxOptions() []fx.Option {
 			zap.NewProduction,                                               // *zap.Logger for fx
 			config.GetHTTPServerPort,                                        // HTTPServerPort
 			config.GetDatabaseDSN,                                           // DatabaseDSN
-			orm.Connection,                                                  // *gorm.DB
-			orm.NewStatisticsRepository,                                     // application.Statistics
+			adapter.NewPG,                                                   // *adapter.DBPool
+			adapter.NewStatisticsRepository,                                 // application.Statistics
 		),
 		fx.Invoke(
 			func(*http.Server) {},

@@ -44,7 +44,6 @@ func (s *StatisticsRepository) MostActiveCategoryByPriceSum() (category string, 
 			ORDER BY tender_sum DESC
 			LIMIT 1;`)
 	err := row.Scan(&sum, &category)
-	fmt.Println(sum, category)
 	if err != nil {
 		return
 	}
@@ -62,15 +61,17 @@ func (s *StatisticsRepository) ActiveTenders() (count int64) {
 	return count
 }
 
-func (s *StatisticsRepository) CategorySumsCounts() (result [][]interface{}) {
+func (s *StatisticsRepository) CategorySumsCounts() (result []application.CategorySumsCount) {
 	rows, err := s.DbPool.conn.Query(context.Background(),
 		`SELECT l.ktru_name AS category,
-		       SUM(a.sum)  AS category_sum,
-		       COUNT(a.id) AS tenders_count
+				   SUM(a.sum)  AS category_sum,
+				   COUNT(a.id) AS tenders_count
 		FROM announces AS a
-		         JOIN lot_announces AS l ON a.id = l.announce_id
+				 JOIN lot_announces AS l ON a.id = l.announce_id
+		WHERE a.sum IS NOT NULL
 		GROUP BY l.ktru_name
-		ORDER BY tenders_count DESC;`)
+		ORDER BY tenders_count DESC, category_sum DESC
+		LIMIT 20;`)
 	if err != nil {
 		return
 	}
@@ -78,18 +79,22 @@ func (s *StatisticsRepository) CategorySumsCounts() (result [][]interface{}) {
 	for rows.Next() {
 		var category string
 		var sum float64
-		var count int
+		var count int64
 		err = rows.Scan(&category, &sum, &count)
 		if err != nil {
+			fmt.Println("CategorySumsCounts error:", err)
 			return
 		}
-		result = append(result, []interface{}{category, sum, count})
+		result = append(result, application.CategorySumsCount{
+			Category: category,
+			Sum:      sum,
+			Count:    count,
+		})
 	}
-	fmt.Println("result", result)
 	return
 }
 
-func (s *StatisticsRepository) MonthsWithMoreTendersThanAverage() (result [][]int) {
+func (s *StatisticsRepository) MonthsWithMoreTendersThanAverage() (result []application.TendersPerMonth) {
 	rows, err := s.DbPool.conn.Query(context.Background(),
 		`WITH YearMonths AS (SELECT count(a.id)                                                          AS tenders_count,
                            EXTRACT(YEAR FROM COALESCE(a.offers_start_date, a.open_start_date))  AS year,
@@ -110,15 +115,18 @@ func (s *StatisticsRepository) MonthsWithMoreTendersThanAverage() (result [][]in
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var tendersCount int
+		var tendersCount int64
 		var year int
 		var month int
 		err = rows.Scan(&tendersCount, &year, &month)
 		if err != nil {
 			return
 		}
-		result = append(result, []int{tendersCount, year, month})
+		result = append(result, application.TendersPerMonth{
+			TendersCount: tendersCount,
+			Year:         year,
+			Month:        month,
+		})
 	}
-	fmt.Println("result", result)
 	return
 }

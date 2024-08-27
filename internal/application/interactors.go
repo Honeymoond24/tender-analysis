@@ -2,7 +2,6 @@ package application
 
 import (
 	"fmt"
-	"sync"
 	"time"
 )
 
@@ -17,61 +16,86 @@ type MostActiveCategoryByPriceSum struct {
 type CategorySumsCount struct {
 	Category string  `json:"category"`
 	Sum      float64 `json:"sum"`
-	Count    int64   `json:"count"`
+	Count    int     `json:"count"`
 }
 type TendersPerMonth struct {
-	TendersCount int64 `json:"tenders_count"`
-	Year         int   `json:"year"`
-	Month        int   `json:"month"`
+	TendersCount int `json:"tenders_count"`
+	Year         int `json:"year"`
+	Month        int `json:"month"`
+}
+type DiagramDataPerMonth struct {
+	TendersCount int     `json:"tenders_count"`
+	TendersSum   float64 `json:"tenders_sum,omitempty"`
+	Year         int     `json:"year"`
+	Month        int     `json:"month"`
 }
 
 type GeneralStatistics struct {
-	ActiveTenders                    int64                        `json:"active_tenders"`
+	ActiveTenders                    int                          `json:"active_tenders"`
 	MostActiveCategoryByTenders      MostActiveCategoryByTenders  `json:"most_active_category_by_tenders"`
 	MostActiveCategoryByPriceSum     MostActiveCategoryByPriceSum `json:"most_active_category_by_price_sum"`
 	CategorySumsCounts               []CategorySumsCount          `json:"category_sums_counts"`
 	MonthsWithMoreTendersThanAverage []TendersPerMonth            `json:"months_with_more_tenders_than_average"`
+	DiagramData                      []DiagramDataPerMonth        `json:"diagram_data"`
 	TimeSpent                        time.Duration                `json:"time_spent"`
 }
 
-func GetGeneralStatistics(repo StatisticsRepository) GeneralStatistics {
+type Params struct {
+	ShowSum      bool
+	SumRangeFrom int
+	SumRangeTo   int
+	CategoryCode string
+	KeyWords     []string
+}
+
+func GetGeneralStatistics(repo StatisticsRepository, params Params) GeneralStatistics {
 	fmt.Println("GetGeneralStatistics start", time.Now().Format("15:04:05.000"))
 	var statistics GeneralStatistics
-	var wg sync.WaitGroup
 	start := time.Now()
-	wg.Add(5)
-	go func() {
-		statistics.ActiveTenders = repo.ActiveTenders()
-		fmt.Println("ActiveTenders", time.Since(start))
-		wg.Done()
+	//var wg sync.WaitGroup
+	//wg.Add(6)
+	//go func() {
+	//	statistics.ActiveTenders = repo.ActiveTenders()
+	//	fmt.Println("ActiveTenders", time.Since(start))
+	//	wg.Done()
+	//}()
+	//
+	//go func() {
+	//	statistics.MostActiveCategoryByTenders.CategoryCode,
+	//		statistics.MostActiveCategoryByTenders.Count = repo.MostActiveCategoryByTenders()
+	//	fmt.Println("MostActiveCategoryByTenders", time.Since(start))
+	//	wg.Done()
+	//}()
+	//
+	//go func() {
+	//	statistics.MostActiveCategoryByPriceSum.CategoryCode,
+	//		statistics.MostActiveCategoryByPriceSum.Sum = repo.MostActiveCategoryByPriceSum()
+	//	fmt.Println("MostActiveCategoryByPriceSum", time.Since(start))
+	//	wg.Done()
+	//}()
+	//
+	//go func() {
+	//	statistics.CategorySumsCounts = repo.CategorySumsCounts()
+	//	fmt.Println("CategorySumsCounts", time.Since(start))
+	//	wg.Done()
+	//}()
+	//
+	//go func() {
+	//	statistics.MonthsWithMoreTendersThanAverage = repo.MonthsWithMoreTendersThanAverage()
+	//	fmt.Println("MonthsWithMoreTendersThanAverage", time.Since(start))
+	//	wg.Done()
+	//}()
+	//
+	//go func() {
+	//	statistics.DiagramData = repo.DiagramByDate()
+	//	fmt.Println("DiagramByDate", time.Since(start), statistics.DiagramData)
+	//	wg.Done()
+	//}()
+	//wg.Wait()
+	func() {
+		statistics.DiagramData = repo.DiagramByDate(params)
+		fmt.Println("DiagramByDate", time.Since(start), statistics.DiagramData)
 	}()
-
-	go func() {
-		statistics.MostActiveCategoryByTenders.Category,
-			statistics.MostActiveCategoryByTenders.Count = repo.MostActiveCategoryByTenders()
-		fmt.Println("MostActiveCategoryByTenders", time.Since(start))
-		wg.Done()
-	}()
-
-	go func() {
-		statistics.MostActiveCategoryByPriceSum.Category,
-			statistics.MostActiveCategoryByPriceSum.Sum = repo.MostActiveCategoryByPriceSum()
-		fmt.Println("MostActiveCategoryByPriceSum", time.Since(start))
-		wg.Done()
-	}()
-
-	go func() {
-		statistics.CategorySumsCounts = repo.CategorySumsCounts()
-		fmt.Println("CategorySumsCounts", time.Since(start))
-		wg.Done()
-	}()
-
-	go func() {
-		statistics.MonthsWithMoreTendersThanAverage = repo.MonthsWithMoreTendersThanAverage()
-		fmt.Println("MonthsWithMoreTendersThanAverage", time.Since(start))
-		wg.Done()
-	}()
-	wg.Wait()
 	statistics.TimeSpent = time.Duration(time.Since(start).Seconds())
 	fmt.Println(start, statistics.TimeSpent)
 	//fmt.Println(statistics)
@@ -83,14 +107,7 @@ func GetPersonalStatistics(userId string) string {
 	return statistics
 }
 
-var counter int
-
 func TestResponseTime() string {
-	counter++
-	localCounter := counter
-	start := time.Now()
-	fmt.Println("TestResponseTime", localCounter, time.Now())
-	time.Sleep(5 * time.Second)
-	fmt.Println("TestResponseTime", localCounter, time.Since(start))
-	return "success"
+	time.Sleep(400 * time.Millisecond)
+	return "success " + fmt.Sprint(time.Now().Format("15:04:05.000"))
 }

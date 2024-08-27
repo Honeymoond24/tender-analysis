@@ -25,3 +25,23 @@ func GetDatabaseDSN(log application.Logger) DatabaseDSN {
 	}
 	return DatabaseDSN(os.Getenv("DB_DSN"))
 }
+
+type RedisAddress string
+
+func GetRedisAddress(log application.Logger) RedisAddress {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	return RedisAddress(os.Getenv("REDIS_HOST") + ":" + os.Getenv("REDIS_PORT"))
+}
+
+type RedisPassword string
+
+func GetRedisPassword(log application.Logger) RedisPassword {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+	return RedisPassword(os.Getenv("REDIS_PASSWORD"))
+}

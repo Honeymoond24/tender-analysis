@@ -4,24 +4,23 @@ import (
 	"context"
 	"git.b4i.kz/b4ikz/tenderok-analytics/cmd/app/config"
 	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation/middleware"
 	"go.uber.org/fx"
 	"net"
 	"net/http"
 	"time"
 )
 
-func SetupServerHandler(apiRouter *http.ServeMux) http.Handler {
-	apiPrefix := "/api/v1/"
-	//apiRouter := NewServeMux()
-
-	rootMuxRouter := http.NewServeMux()
-
-	apiPrefixSliced := apiPrefix[:len([]rune(apiPrefix))-1] // remove the last slash: '/api/v1/' to '/api/v1'
-	rootMuxRouter.Handle(apiPrefix, http.StripPrefix(apiPrefixSliced, apiRouter))
-	handler := middleware.Logging(rootMuxRouter)
-	return handler
-}
+//func SetupServerHandler(apiRouter *http.ServeMux) http.Handler {
+//	apiPrefix := "/api/v1/"
+//	//apiRouter := NewServeMux()
+//
+//	rootMuxRouter := http.NewServeMux()
+//
+//	apiPrefixSliced := apiPrefix[:len([]rune(apiPrefix))-1] // remove the last slash: '/api/v1/' to '/api/v1'
+//	rootMuxRouter.Handle(apiPrefix, http.StripPrefix(apiPrefixSliced, apiRouter))
+//	handler := middleware.Logging(rootMuxRouter)
+//	return handler
+//}
 
 func NewHTTPServer(
 	lc fx.Lifecycle,

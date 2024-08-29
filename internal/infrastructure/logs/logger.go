@@ -1,7 +1,7 @@
 package logs
 
 import (
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
+	"github.com/Honeymoond24/tender-analysis/internal/application"
 	"go.uber.org/zap"
 )
 

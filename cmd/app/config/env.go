@@ -1,7 +1,7 @@
 package config
 
 import (
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
+	"github.com/Honeymoond24/tender-analysis/internal/application"
 	"github.com/joho/godotenv"
 	"os"
 )

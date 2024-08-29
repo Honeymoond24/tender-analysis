@@ -3,8 +3,8 @@ package router
 import (
 	"encoding/json"
 	"fmt"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application/use_cases"
+	"github.com/Honeymoond24/tender-analysis/internal/application"
+	"github.com/Honeymoond24/tender-analysis/internal/application/use_cases"
 	"net/http"
 )
 

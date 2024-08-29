@@ -2,9 +2,9 @@ package presentation
 
 import (
 	"context"
-	"git.b4i.kz/b4ikz/tenderok-analytics/cmd/app/config"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation/middleware"
+	"github.com/Honeymoond24/tender-analysis/cmd/app/config"
+	"github.com/Honeymoond24/tender-analysis/internal/application"
+	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/presentation/middleware"
 	"go.uber.org/fx"
 	"net"
 	"net/http"

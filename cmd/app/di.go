@@ -1,11 +1,11 @@
 package main
 
 import (
-	"git.b4i.kz/b4ikz/tenderok-analytics/cmd/app/config"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/database/adapter"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/logs"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/infrastructure/presentation/router"
+	"github.com/Honeymoond24/tender-analysis/cmd/app/config"
+	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/database/adapter"
+	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/logs"
+	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/presentation"
+	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/presentation/router"
 	"go.uber.org/fx"
 	"go.uber.org/fx/fxevent"
 	"go.uber.org/zap"

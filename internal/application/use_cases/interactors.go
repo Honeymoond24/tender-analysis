@@ -2,7 +2,7 @@ package use_cases
 
 import (
 	"fmt"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
+	"github.com/Honeymoond24/tender-analysis/internal/application"
 )
 
 type MostActiveCategoryByTenders struct {

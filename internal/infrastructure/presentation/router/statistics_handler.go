@@ -4,27 +4,27 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/Honeymoond24/tender-analysis/internal/application"
-	"github.com/redis/go-redis/v9"
+	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/cache"
 	"net/http"
 	"strconv"
 	"time"
 )
 
 type StatisticsHandler struct {
-	log         application.Logger
-	repository  application.StatisticsRepository
-	cacheClient *redis.Client
+	log        application.Logger
+	repository application.StatisticsRepository
+	cache      cache.Cache
 }
 
 func NewStatisticsHandler(
 	log application.Logger,
 	repository application.StatisticsRepository,
-	cacheClient *redis.Client,
+	cache cache.Cache,
 ) *StatisticsHandler {
 	return &StatisticsHandler{
-		log:         log,
-		repository:  repository,
-		cacheClient: cacheClient,
+		log:        log,
+		repository: repository,
+		cache:      cache,
 	}
 }
 func (h *StatisticsHandler) Pattern() string {
@@ -63,7 +63,7 @@ func (h *StatisticsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(fmt.Sprintf("1 %#v", params))
 	fmt.Println(fmt.Sprintf("2 %v", params))
 
-	cachedResponse, err := h.cacheClient.Get(r.Context(), h.Pattern()+fmt.Sprintf("%#v", params)).Result()
+	cachedResponse, err := h.cache.Get(r.Context(), h.Pattern()+fmt.Sprintf("%#v", params))
 	if err == nil && cachedResponse != "" {
 		h.log.Info(fmt.Sprintf("Serving from cache %v", h.Pattern()))
 		_, _ = fmt.Fprint(w, cachedResponse)
@@ -81,5 +81,9 @@ func (h *StatisticsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 	}
 
-	h.cacheClient.Set(r.Context(), h.Pattern()+fmt.Sprintf("%#v", params), jsonData, 60*time.Second)
+	err = h.cache.Set(r.Context(), h.Pattern()+fmt.Sprintf("%#v", params), jsonData, 60*time.Second)
+	if err != nil {
+		h.log.Error("Failed to cache response", err)
+		return
+	}
 }

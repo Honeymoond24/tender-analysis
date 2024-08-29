@@ -2,6 +2,7 @@ package main
 
 import (
 	"github.com/Honeymoond24/tender-analysis/cmd/app/config"
+	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/cache"
 	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/database/adapter"
 	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/logs"
 	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/presentation"
@@ -46,7 +47,7 @@ func GetFxOptions() []fx.Option {
 			config.GetDatabaseDSN,           // DatabaseDSN
 			adapter.NewPG,                   // *adapter.DBPool
 			adapter.NewStatisticsRepository, // application.Statistics
-			presentation.NewCacheClient,     // *redis.Client
+			cache.NewCacheClient,            // cache.Cache
 			config.GetRedisAddress,          // RedisAddress
 			config.GetRedisPassword,         // RedisPassword
 		),

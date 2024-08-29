@@ -1,8 +1,8 @@
 package presentation
 
 import (
-	"git.b4i.kz/b4ikz/tenderok-analytics/cmd/app/config"
-	"git.b4i.kz/b4ikz/tenderok-analytics/internal/application"
+	"github.com/Honeymoond24/tender-analysis/cmd/app/config"
+	"github.com/Honeymoond24/tender-analysis/internal/application"
 	"github.com/redis/go-redis/v9"
 	"net/http"
 )

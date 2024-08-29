@@ -4,7 +4,6 @@ import (
 	"context"
 	"github.com/Honeymoond24/tender-analysis/cmd/app/config"
 	"github.com/Honeymoond24/tender-analysis/internal/application"
-	"github.com/Honeymoond24/tender-analysis/internal/infrastructure/presentation/middleware"
 	"go.uber.org/fx"
 	"net"
 	"net/http"

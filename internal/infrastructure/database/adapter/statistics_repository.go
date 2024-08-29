@@ -44,14 +44,13 @@ func (s *StatisticsRepository) MostActiveCategoryByPriceSum() (category string, 
 			ORDER BY tender_sum DESC
 			LIMIT 1;`)
 	err := row.Scan(&sum, &category)
-	fmt.Println(sum, category)
 	if err != nil {
 		return
 	}
 	return
 }
 
-func (s *StatisticsRepository) ActiveTenders() (count int64) {
+func (s *StatisticsRepository) ActiveTenders() (count int) {
 	row := s.DbPool.conn.QueryRow(context.Background(),
 		`SELECT count(1) FROM announces AS a
             WHERE COALESCE(a.open_start_date, a.offers_start_date) > now()`)
@@ -62,15 +61,17 @@ func (s *StatisticsRepository) ActiveTenders() (count int64) {
 	return count
 }
 
-func (s *StatisticsRepository) CategorySumsCounts() (result [][]interface{}) {
+func (s *StatisticsRepository) CategorySumsCounts() (result []application.CategorySumsCount) {
 	rows, err := s.DbPool.conn.Query(context.Background(),
 		`SELECT l.ktru_name AS category,
-		       SUM(a.sum)  AS category_sum,
-		       COUNT(a.id) AS tenders_count
+				   SUM(a.sum)  AS category_sum,
+				   COUNT(a.id) AS tenders_count
 		FROM announces AS a
-		         JOIN lot_announces AS l ON a.id = l.announce_id
+				 JOIN lot_announces AS l ON a.id = l.announce_id
+		WHERE a.sum IS NOT NULL
 		GROUP BY l.ktru_name
-		ORDER BY tenders_count DESC;`)
+		ORDER BY tenders_count DESC, category_sum DESC
+		LIMIT 20;`)
 	if err != nil {
 		return
 	}
@@ -81,15 +82,19 @@ func (s *StatisticsRepository) CategorySumsCounts() (result [][]interface{}) {
 		var count int
 		err = rows.Scan(&category, &sum, &count)
 		if err != nil {
+			fmt.Println("CategorySumsCounts error:", err)
 			return
 		}
-		result = append(result, []interface{}{category, sum, count})
+		result = append(result, application.CategorySumsCount{
+			Category: category,
+			Sum:      sum,
+			Count:    count,
+		})
 	}
-	fmt.Println("result", result)
 	return
 }
 
-func (s *StatisticsRepository) MonthsWithMoreTendersThanAverage() (result [][]int) {
+func (s *StatisticsRepository) MonthsWithMoreTendersThanAverage() (result []application.TendersPerMonth) {
 	rows, err := s.DbPool.conn.Query(context.Background(),
 		`WITH YearMonths AS (SELECT count(a.id)                                                          AS tenders_count,
                            EXTRACT(YEAR FROM COALESCE(a.offers_start_date, a.open_start_date))  AS year,
@@ -117,8 +122,90 @@ func (s *StatisticsRepository) MonthsWithMoreTendersThanAverage() (result [][]in
 		if err != nil {
 			return
 		}
-		result = append(result, []int{tendersCount, year, month})
+		result = append(result, application.TendersPerMonth{
+			TendersCount: tendersCount,
+			Year:         year,
+			Month:        month,
+		})
 	}
-	fmt.Println("result", result)
+	return
+}
+
+func (s *StatisticsRepository) DiagramByDate(params application.Params) (result []application.DiagramDataPerMonth) {
+	var queryArguments []interface{}
+	query := `SELECT count(a.id)`
+	if params.ShowSum {
+		query += `, sum(a.sum)`
+	}
+	query += `,
+			CASE
+				WHEN a.offers_start_date IS NOT NULL THEN
+					EXTRACT(YEAR FROM a.offers_start_date)
+				ELSE
+					EXTRACT(YEAR FROM a.open_start_date)
+				END AS year,
+		   	CASE
+				WHEN a.offers_start_date IS NOT NULL THEN
+					EXTRACT(MONTH FROM a.offers_start_date)
+				ELSE
+					EXTRACT(MONTH FROM a.open_start_date)
+				END AS month
+		FROM announces AS a`
+	if len(params.KeyWords) != 0 || params.CategoryCode != "" {
+		query += ` LEFT JOIN lot_announces AS l ON a.id = l.announce_id`
+	}
+	query += ` WHERE (a.offers_start_date IS NOT NULL OR a.open_start_date IS NOT NULL)`
+	if params.SumRangeFrom > 0 {
+		queryArguments = append(queryArguments, params.SumRangeFrom)
+		query += fmt.Sprintf(` AND a.sum > $%v `, len(queryArguments))
+	} else {
+		query += ` AND a.sum > 0 `
+	}
+	if params.SumRangeTo > 0 {
+		queryArguments = append(queryArguments, params.SumRangeTo)
+		query += fmt.Sprintf(` AND a.sum < $%v`, len(queryArguments))
+	}
+	if params.CategoryCode != "" {
+		queryArguments = append(queryArguments, params.CategoryCode)
+		query += fmt.Sprintf(` AND l.ktru_code = $%v`, len(queryArguments))
+	}
+	if len(params.KeyWords) != 0 {
+		for _, keyWord := range params.KeyWords {
+			queryArguments = append(queryArguments, fmt.Sprintf("%%%v%", keyWord))
+			query += fmt.Sprintf(` AND l.ktru_name LIKE $%v`, len(queryArguments))
+		}
+	}
+	query += ` GROUP BY year, month 
+			   ORDER BY year, month;`
+	fmt.Println("Final query:", query)
+	rows, err := s.DbPool.conn.Query(context.Background(), query, queryArguments...)
+	if err != nil {
+		fmt.Println("DiagramByDate error:", err)
+		return
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var tendersCount int
+		var tendersSum float64
+		var year int
+		var month int
+		var destination []interface{}
+		if params.ShowSum {
+			destination = []interface{}{&tendersCount, &tendersSum, &year, &month}
+		} else {
+			destination = []interface{}{&tendersCount, &year, &month}
+		}
+		err = rows.Scan(destination...)
+		if err != nil {
+			fmt.Println("DiagramByDate rows.Scan error:", err) // TODO: log with logger
+			return
+		}
+		result = append(result, application.DiagramDataPerMonth{
+			TendersCount: tendersCount,
+			TendersSum:   tendersSum,
+			Year:         year,
+			Month:        month,
+		})
+	}
 	return
 }

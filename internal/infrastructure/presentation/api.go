@@ -11,17 +11,17 @@ import (
 	"time"
 )
 
-func SetupServerHandler(apiRouter *http.ServeMux) http.Handler {
-	apiPrefix := "/api/v1/"
-	//apiRouter := NewServeMux()
-
-	rootMuxRouter := http.NewServeMux()
-
-	apiPrefixSliced := apiPrefix[:len([]rune(apiPrefix))-1] // remove the last slash: '/api/v1/' to '/api/v1'
-	rootMuxRouter.Handle(apiPrefix, http.StripPrefix(apiPrefixSliced, apiRouter))
-	handler := middleware.Logging(rootMuxRouter)
-	return handler
-}
+//func SetupServerHandler(apiRouter *http.ServeMux) http.Handler {
+//	apiPrefix := "/api/v1/"
+//	//apiRouter := NewServeMux()
+//
+//	rootMuxRouter := http.NewServeMux()
+//
+//	apiPrefixSliced := apiPrefix[:len([]rune(apiPrefix))-1] // remove the last slash: '/api/v1/' to '/api/v1'
+//	rootMuxRouter.Handle(apiPrefix, http.StripPrefix(apiPrefixSliced, apiRouter))
+//	handler := middleware.Logging(rootMuxRouter)
+//	return handler
+//}
 
 func NewHTTPServer(
 	lc fx.Lifecycle,
@@ -34,8 +34,8 @@ func NewHTTPServer(
 	srv := &http.Server{
 		Addr:           string(":" + port),
 		Handler:        mux,
-		ReadTimeout:    10 * time.Second,
-		WriteTimeout:   10 * time.Second,
+		ReadTimeout:    100 * time.Second,
+		WriteTimeout:   100 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 

@@ -75,6 +75,30 @@ services:
       retries: 5
     logging: *logging
 
+  redis:
+    image: redis:7.4-alpine
+    container_name: "redis"
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 8s
+      timeout: 3s
+      retries: 3
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: "redis-insight"
+    restart: unless-stopped
+    volumes:
+      - ./docker/volumes/redis-insight/data:/data
+    ports:
+      - "5540:5540"
+    logging: *logging
+
   nginx:
     image: nginx:1.19.2-alpine
     restart: unless-stopped

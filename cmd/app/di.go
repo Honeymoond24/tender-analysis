@@ -20,6 +20,14 @@ func AsRoute(f any) any {
 	)
 }
 
+func AsRouteWithLogging(f any) any {
+	return fx.Annotate(
+		f,
+		fx.As(new(router.Route)),
+		fx.ResultTags(`group:"routes"`),
+	)
+}
+
 func GetFxOptions() []fx.Option {
 	return []fx.Option{
 		fx.WithLogger(func(log *zap.Logger) fxevent.Logger {
@@ -30,13 +38,17 @@ func GetFxOptions() []fx.Option {
 			fx.Annotate(router.NewServeMux, fx.ParamTags(`group:"routes"`)), // *http.ServeMux
 			AsRoute(router.NewStatisticsHandler),                            // *StatisticsHandler
 			AsRoute(router.NewPersonalStatisticsHandler),                    // *PersonalStatisticsHandler
-			presentation.SetupServerHandler,                                 // http.Handler
-			logs.NewLogger,                                                  // *Logger
-			zap.NewProduction,                                               // *zap.Logger for fx
-			config.GetHTTPServerPort,                                        // HTTPServerPort
-			config.GetDatabaseDSN,                                           // DatabaseDSN
-			adapter.NewPG,                                                   // *adapter.DBPool
-			adapter.NewStatisticsRepository,                                 // application.Statistics
+			AsRouteWithLogging(router.NewPingHandler),                       // *TestResponseTimeHandler
+			//presentation.SetupServerHandler,                                 // http.Handler
+			logs.NewLogger,                  // *Logger
+			zap.NewProduction,               // *zap.Logger for fx
+			config.GetHTTPServerPort,        // HTTPServerPort
+			config.GetDatabaseDSN,           // DatabaseDSN
+			adapter.NewPG,                   // *adapter.DBPool
+			adapter.NewStatisticsRepository, // application.Statistics
+			presentation.NewCacheClient,     // *redis.Client
+			config.GetRedisAddress,          // RedisAddress
+			config.GetRedisPassword,         // RedisPassword
 		),
 		fx.Invoke(
 			func(*http.Server) {},
